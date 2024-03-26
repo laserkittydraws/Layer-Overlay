@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ActionCollection version="2" name="Scripts">
+    <Actions category="Scripts">
+        <text>Layer Overlay Extension</text>
+
+        <Action name="testid">
+        <icon></icon>
+        <text>Test Action (in shortcut editor)</text>
+        <whatsThis></whatsThis>
+        <toolTip></toolTip>
+        <iconText></iconText>
+        <activationFlags>00001</activationFlags>
+        <activationConditions>0</activationConditions>
+        <shortcut>ctrl+alt+shift+p</shortcut>
+        <isCheckable>false</isCheckable>
+        <statusTip></statusTip>
+        </Action>
+    </Actions>
+</ActionCollection>

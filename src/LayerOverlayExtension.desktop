@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Service
 ServiceTypes=Krita/PythonPlugin
-X-KDE-Library=LayerOverlay
+X-KDE-Library=LayerOverlayExtension
 X-Python-2-Compatible=false
 Name=Layer Overlay Extension
 Comment=An extension to add an overlay of the layer explorer
