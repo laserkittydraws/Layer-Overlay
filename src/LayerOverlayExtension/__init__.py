@@ -1,1 +1,1 @@
-from .LayerOverlay import *
+from .LayerOverlayExtension import *

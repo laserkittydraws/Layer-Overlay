@@ -5,6 +5,8 @@ from PyQt5.QtWidgets import QMessageBox, QWidget, QVBoxLayout, QLabel, QStyle, Q
 from .KritaApi import *
 from krita import *
 
+from .LayerOverlayWidget import *
+
 EXTENSION_VERSION = '0.1.0'
 
 class LayerOverlayExtension(Extension):
@@ -16,6 +18,8 @@ class LayerOverlayExtension(Extension):
     
     view: View
     views: list[View]
+    
+    layerOverlay: LayerOverlayWidget = None
 
     def __init__(self, parent: QMainWindow):
         # This is initialising the parent, always important when subclassing.
@@ -27,25 +31,29 @@ class LayerOverlayExtension(Extension):
         # setup signals
         self.notifier.viewCreated.connect(self.updateViews)
         self.notifier.viewClosed.connect(self.updateViews)
+        self.notifier.applicationClosing.connect(self.appClosing)
         self.notifier.windowCreated.connect(self.updateActiveWindow)
         
 
-    def createActions(self, window: Window):
+    def appClosing(self) -> None:
+        pass
+    
+    def createActions(self, window: Window) -> None:
         axn = window.createAction('testid', 'Test Action', 'Tools/Scripts')
         axn.triggered.connect(self.test2)
         
-    def updateActiveWindow(self):
+    def updateActiveWindow(self) -> None:
         if not self.activeWindowUpdated:
             self.activeWindow = self.kritaInst.activeWindow()
             self.activeWindow.activeViewChanged.connect(self.updateView)
     
-    def updateViews(self):
+    def updateViews(self) -> None:
         self.views = Krita.instance().activeWindow().views()
         
-    def updateView(self):
+    def updateView(self) -> None:
         self.view = Krita.instance().activeWindow().activeView()
     
-    def test(self):
+    def test(self) -> None:
         x = QMessageBox(
             QMessageBox.Icon.Question,
             'Test title',
@@ -54,20 +62,10 @@ class LayerOverlayExtension(Extension):
         )
         x.exec_()
         
-    def test2(self):
-        x = QWidget(Krita.instance().activeWindow().qwindow())
-        x.setGeometry(200,200,400,400)
-        x.setWindowFlags(Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint)
-        x.setAutoFillBackground(True)
-        
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0,0,0,0)
-        x.setLayout(layout)
-        
-        y = QLabel('lorem ipsum')
-        layout.addWidget(y)
-        
-        x.show()
+    def test2(self) -> None:
+        if self.layerOverlay is None:
+            self.layerOverlay = LayerOverlayWidget(Krita.instance().activeWindow().qwindow())
+            self.layerOverlay.show()
 
 # And add the extension to Krita's list of extensions:
 Krita.instance().addExtension(LayerOverlayExtension(Krita.instance()))
