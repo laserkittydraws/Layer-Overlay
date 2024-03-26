@@ -66,6 +66,9 @@ class LayerOverlayExtension(Extension):
         if self.layerOverlay is None:
             self.layerOverlay = LayerOverlayWidget(Krita.instance().activeWindow().qwindow())
             self.layerOverlay.show()
+        else:
+            self.layerOverlay.closeWidget()
+            self.layerOverlay = None
 
 # And add the extension to Krita's list of extensions:
 Krita.instance().addExtension(LayerOverlayExtension(Krita.instance()))
