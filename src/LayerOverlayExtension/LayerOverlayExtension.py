@@ -27,25 +27,24 @@ class LayerOverlayExtension(Extension):
 
     def setup(self):
         
-        
         # setup signals
         self.notifier.viewCreated.connect(self.updateViews)
         self.notifier.viewClosed.connect(self.updateViews)
-        self.notifier.applicationClosing.connect(self.appClosing)
         self.notifier.windowCreated.connect(self.updateActiveWindow)
         
 
-    def appClosing(self) -> None:
-        pass
     
     def createActions(self, window: Window) -> None:
         axn = window.createAction('testid', 'Test Action', 'Tools/Scripts')
-        axn.triggered.connect(self.test2)
+        axn.triggered.connect(self.showLayerOverlay)
         
     def updateActiveWindow(self) -> None:
         if not self.activeWindowUpdated:
             self.activeWindow = self.kritaInst.activeWindow()
             self.activeWindow.activeViewChanged.connect(self.updateView)
+            
+            self.kritaInst.action('activateNextLayer').triggered.connect(self.updateLayerOverlay)
+            self.kritaInst.action('activatePreviousLayer').triggered.connect(self.updateLayerOverlay)
     
     def updateViews(self) -> None:
         self.views = Krita.instance().activeWindow().views()
@@ -62,10 +61,14 @@ class LayerOverlayExtension(Extension):
         )
         x.exec_()
         
-    def test2(self) -> None:
+    def updateLayerOverlay(self) -> None:
+        if self.layerOverlay is not None:
+            self.layerOverlay.updateLayers()
+        
+    def showLayerOverlay(self) -> None:
         if self.layerOverlay is None:
             self.layerOverlay = LayerOverlayWidget(Krita.instance().activeWindow().qwindow())
-            self.layerOverlay.show()
+            self.layerOverlay.launch()
         else:
             self.layerOverlay.closeWidget()
             self.layerOverlay = None
