@@ -20,6 +20,7 @@ class LayerOverlayExtension(Extension):
     views: list[View]
     
     layerOverlay: LayerOverlayWidget = None
+    layerOverlayIsVisible = False
 
     def __init__(self, parent: QMainWindow):
         # This is initialising the parent, always important when subclassing.
@@ -44,7 +45,9 @@ class LayerOverlayExtension(Extension):
             self.activeWindow.activeViewChanged.connect(self.updateView)
             
             self.kritaInst.action('activateNextLayer').triggered.connect(self.updateLayerOverlay)
+            self.kritaInst.action('activateNextSiblingLayer').triggered.connect(self.updateLayerOverlay)
             self.kritaInst.action('activatePreviousLayer').triggered.connect(self.updateLayerOverlay)
+            self.kritaInst.action('activatePreviousSiblingLayer').triggered.connect(self.updateLayerOverlay)
     
     def updateViews(self) -> None:
         self.views = Krita.instance().activeWindow().views()
@@ -69,9 +72,13 @@ class LayerOverlayExtension(Extension):
         if self.layerOverlay is None:
             self.layerOverlay = LayerOverlayWidget(Krita.instance().activeWindow().qwindow())
             self.layerOverlay.launch()
+            self.layerOverlayIsVisible = True
+        elif self.layerOverlayIsVisible:
+            self.layerOverlay.close()
+            self.layerOverlayIsVisible = False
         else:
-            self.layerOverlay.closeWidget()
-            self.layerOverlay = None
+            self.layerOverlay.launch()
+            self.layerOverlayIsVisible = True
 
 # And add the extension to Krita's list of extensions:
 Krita.instance().addExtension(LayerOverlayExtension(Krita.instance()))

@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import QListView, QWidget
 from PyQt5.QtCore import QAbstractListModel
 
+# TODO all of it
+
 class CustomListItem(QWidget): ...
 
 class CustomListModel(QAbstractListModel): ...

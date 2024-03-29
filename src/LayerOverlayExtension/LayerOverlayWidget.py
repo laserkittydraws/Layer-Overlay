@@ -1,4 +1,5 @@
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QPointF, QPoint
+from PyQt5.QtGui import QMouseEvent
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QListWidget, QListWidgetItem
 # from PyQt5.QtGui import QIcon
 
@@ -25,8 +26,10 @@ class LayerOverlayWidget(QWidget):
         flags: Qt.WindowFlags = Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint
         super().__init__(parent, flags)
         
-        self.setGeometry(200,200,400,200)
-        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        self.setFixedSize(400, 200)
+        self.setAttribute(Qt.WidgetAttribute.WA_QuitOnClose, True)
+        self.move(150, 150)
+        self.oldPos = self.pos()
         
         layout = QVBoxLayout()
         layout.setContentsMargins(10,0,10,10)
@@ -67,10 +70,11 @@ class LayerOverlayWidget(QWidget):
         self.show()
         
     def addItem(self, parent: QListWidget, node: Node, level: int) -> QListWidgetItem:
-        item = QListWidgetItem(parent)
-        item.setIcon(LAYER_ICONS.get(node.type()))
-        item.setText('   '*level + node.name())
-        return item
+        if node:
+            item = QListWidgetItem(parent)
+            item.setIcon(LAYER_ICONS.get(node.type()))
+            item.setText('    '*level + node.name())
+            return item
     
     def updateLayers(self) -> None:
         
@@ -131,3 +135,11 @@ class LayerOverlayWidget(QWidget):
         parent: Node = node
         while (parent := parent.parentNode()) != rootNode: level += 1
         return level
+    
+    def mousePressEvent(self, event: QMouseEvent):
+        self.oldPos = event.globalPos()
+    
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        delta: QPoint = event.globalPos() - self.oldPos
+        self.move(self.x() + delta.x(), self.y() + delta.y())
+        self.oldPos = event.globalPos()
