@@ -39,25 +39,25 @@ class LayerOverlayWidget(QWidget):
         
         self.layerList = QListWidget()
         activeNode: Node = Krita.instance().activeDocument().activeNode()
+        activeNodeLevel = self._getNodeLevel(activeNode)
+        
         aboveNode: Node = self._findAboveNode(activeNode)
+        aboveNodeLevel = self._getNodeLevel(aboveNode)
+        
         belowNode: Node = self._findBelowNode(activeNode)
+        belowNodeLevel = self._getNodeLevel(belowNode)
         
-        aboveNodeItem = QListWidgetItem(self.layerList)
-        aboveNodeItem.setIcon(LAYER_ICONS.get(aboveNode.type()))
-        aboveNodeItem.setText(aboveNode.name())
+        nodeLevelMin = min([activeNodeLevel, aboveNodeLevel, belowNodeLevel])
+        activeNodeLevel -= nodeLevelMin
+        aboveNodeLevel -= nodeLevelMin
+        belowNodeLevel -= nodeLevelMin
         
-        activeNodeItem = QListWidgetItem(self.layerList)
-        activeNodeItem.setIcon(LAYER_ICONS.get(activeNode.type()))
-        activeNodeItem.setText(activeNode.name())
-        
-        belowNodeItem = QListWidgetItem(self.layerList)
-        belowNodeItem.setIcon(LAYER_ICONS.get(belowNode.type()))
-        belowNodeItem.setText(belowNode.name())
+        aboveNodeItem = self.addItem(self.layerList, aboveNode, aboveNodeLevel)
+        activeNodeItem = self.addItem(self.layerList, activeNode, activeNodeLevel)
+        belowNodeItem = self.addItem(self.layerList, belowNode, belowNodeLevel)
         
         self.layerList.setCurrentItem(activeNodeItem)
-        
         gBoxLayout.addWidget(self.layerList)
-        
         layout.addWidget(gBox)
         
     def closeWidget(self) -> None:
@@ -66,25 +66,31 @@ class LayerOverlayWidget(QWidget):
     def launch(self) -> None:
         self.show()
         
+    def addItem(self, parent: QListWidget, node: Node, level: int) -> QListWidgetItem:
+        item = QListWidgetItem(parent)
+        item.setIcon(LAYER_ICONS.get(node.type()))
+        item.setText('   '*level + node.name())
+        return item
+    
     def updateLayers(self) -> None:
         
         self.layerList.clear()
         
         activeNode: Node = Krita.instance().activeDocument().activeNode()
+        activeNodeLevel = self._getNodeLevel(activeNode)
         aboveNode: Node = self._findAboveNode(activeNode)
+        aboveNodeLevel = self._getNodeLevel(aboveNode)
         belowNode: Node = self._findBelowNode(activeNode)
+        belowNodeLevel = self._getNodeLevel(belowNode)
         
-        aboveNodeItem = QListWidgetItem(self.layerList)
-        aboveNodeItem.setIcon(LAYER_ICONS.get(aboveNode.type()))
-        aboveNodeItem.setText(aboveNode.name())
+        nodeLevelMin = min([activeNodeLevel, aboveNodeLevel, belowNodeLevel])
+        activeNodeLevel -= nodeLevelMin
+        aboveNodeLevel -= nodeLevelMin
+        belowNodeLevel -= nodeLevelMin
         
-        activeNodeItem = QListWidgetItem(self.layerList)
-        activeNodeItem.setIcon(LAYER_ICONS.get(activeNode.type()))
-        activeNodeItem.setText(activeNode.name())
-        
-        belowNodeItem = QListWidgetItem(self.layerList)
-        belowNodeItem.setIcon(LAYER_ICONS.get(belowNode.type()))
-        belowNodeItem.setText(belowNode.name())
+        aboveNodeItem = self.addItem(self.layerList, aboveNode, aboveNodeLevel)
+        activeNodeItem = self.addItem(self.layerList, activeNode, activeNodeLevel)
+        belowNodeItem = self.addItem(self.layerList, belowNode, belowNodeLevel)
         
         self.layerList.setCurrentItem(activeNodeItem)
         
@@ -118,3 +124,10 @@ class LayerOverlayWidget(QWidget):
             return None if node == (belowNode := self._findBelowNode(parentNode)) else belowNode
         
         return parentNode.childNodes()[currIndex - 1]
+    
+    def _getNodeLevel(self, node: Node) -> int:
+        rootNode = Krita.instance().activeDocument().rootNode()
+        level = 0
+        parent: Node = node
+        while (parent := parent.parentNode()) != rootNode: level += 1
+        return level
