@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QPointF, QPoint
+from PyQt5.QtCore import Qt, QPointF, QPoint, QRect
 from PyQt5.QtGui import QMouseEvent
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QListWidget, QListWidgetItem
 # from PyQt5.QtGui import QIcon
@@ -17,10 +17,14 @@ LAYER_ICONS = {
     'vectorlayer': Krita.instance().icon('vectorLayer')
 }
 
+startPosScale: float = 0.02
 
 class LayerOverlayWidget(QWidget):
     
     layerList: QListWidget
+    canvasOnlyMode: bool
+    oldCanvasPosition: QPoint
+    oldCanvasSize: QRect
     
     def __init__(self, parent: QWidget | None = ...) -> None:
         flags: Qt.WindowFlags = Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint
@@ -28,7 +32,19 @@ class LayerOverlayWidget(QWidget):
         
         self.setFixedSize(400, 200)
         self.setAttribute(Qt.WidgetAttribute.WA_QuitOnClose, True)
-        self.move(150, 150)
+        
+        self.canvasOnlyMode = False
+        
+        canvas: QWidget = Krita.instance().activeWindow().qwindow().findChild(QWidget,'view_0')
+        canvasPosition = canvas.mapToGlobal(QPoint(0, 0))
+        self.oldCanvasPosition = canvasPosition
+        self.oldCanvasSize = canvas.rect()
+        startPos = min(
+            int(startPosScale * canvas.width()),
+            int(startPosScale * canvas.height())
+        )
+        
+        self.move(startPos + canvasPosition.x(), startPos + canvasPosition.y())
         self.oldPos = self.pos()
         
         layout = QVBoxLayout()
@@ -55,9 +71,9 @@ class LayerOverlayWidget(QWidget):
         aboveNodeLevel -= nodeLevelMin
         belowNodeLevel -= nodeLevelMin
         
-        aboveNodeItem = self.addItem(self.layerList, aboveNode, aboveNodeLevel)
-        activeNodeItem = self.addItem(self.layerList, activeNode, activeNodeLevel)
-        belowNodeItem = self.addItem(self.layerList, belowNode, belowNodeLevel)
+        aboveNodeItem = self._addItem(self.layerList, aboveNode, aboveNodeLevel)
+        activeNodeItem = self._addItem(self.layerList, activeNode, activeNodeLevel)
+        belowNodeItem = self._addItem(self.layerList, belowNode, belowNodeLevel)
         
         self.layerList.setCurrentItem(activeNodeItem)
         gBoxLayout.addWidget(self.layerList)
@@ -67,12 +83,23 @@ class LayerOverlayWidget(QWidget):
         self.close()
         
     def launch(self) -> None:
+        canvas: QWidget = Krita.instance().activeWindow().qwindow().findChild(QWidget,'view_0')
+        canvasPosition = canvas.mapToGlobal(QPoint(0, 0))
+        startPos = min(
+            int(startPosScale * canvas.width()),
+            int(startPosScale * canvas.height())
+        )
+        
+        if not self.canvasOnlyMode:
+            self.move(startPos + canvasPosition.x(), startPos + canvasPosition.y())
+        else:
+            self.move(startPos + canvasPosition.x(), startPos + int(canvasPosition.y() / 2))
         self.show()
         
-    def addItem(self, parent: QListWidget, node: Node, level: int) -> QListWidgetItem:
+    def _addItem(self, parent: QListWidget, node: Node, level: int) -> QListWidgetItem:
         if node:
             item = QListWidgetItem(parent)
-            item.setIcon(LAYER_ICONS.get(node.type()))
+            item.setIcon(LAYER_ICONS.get(node.type(), LayerOverlayWidget.get('paintlayer')))
             item.setText('    '*level + node.name())
             return item
     
@@ -92,16 +119,31 @@ class LayerOverlayWidget(QWidget):
         aboveNodeLevel -= nodeLevelMin
         belowNodeLevel -= nodeLevelMin
         
-        aboveNodeItem = self.addItem(self.layerList, aboveNode, aboveNodeLevel)
-        activeNodeItem = self.addItem(self.layerList, activeNode, activeNodeLevel)
-        belowNodeItem = self.addItem(self.layerList, belowNode, belowNodeLevel)
+        aboveNodeItem = self._addItem(self.layerList, aboveNode, aboveNodeLevel)
+        activeNodeItem = self._addItem(self.layerList, activeNode, activeNodeLevel)
+        belowNodeItem = self._addItem(self.layerList, belowNode, belowNodeLevel)
         
         self.layerList.setCurrentItem(activeNodeItem)
         
-    def __findBottomNode(self, node: Node) -> Node:
+    def updatePosition(self) -> None:
+        canvas: QWidget = Krita.instance().activeWindow().qwindow().findChild(QWidget,'view_0')
+        canvasPosition = canvas.mapToGlobal(QPoint(0, 0))
+        
+        startPos = min(
+            int(startPosScale * canvas.width()),
+            int(startPosScale * canvas.height())
+        )
+        
+        self.canvasOnlyMode = not self.canvasOnlyMode
+        if not self.canvasOnlyMode:
+            self.move(startPos + canvasPosition.x(), startPos + canvasPosition.y())
+        else:
+            self.move(startPos + canvasPosition.x(), startPos + int(canvasPosition.y() / 2))
+        
+    def _findBottomNode(self, node: Node) -> Node:
         if not node.collapsed():
             if (childs := node.childNodes()):
-                return self.__findBottomNode(childs[0])
+                return self._findBottomNode(childs[0])
             else:
                 return node
         else:
@@ -115,7 +157,7 @@ class LayerOverlayWidget(QWidget):
         if currIndex == numChilds - 1:
                 return parentNode
         else:
-            return self.__findBottomNode(parentNode.childNodes()[currIndex + 1])
+            return self._findBottomNode(parentNode.childNodes()[currIndex + 1])
         
     def _findBelowNode(self, node: Node) -> Node:
         currIndex: int = node.index()
@@ -136,10 +178,11 @@ class LayerOverlayWidget(QWidget):
         while (parent := parent.parentNode()) != rootNode: level += 1
         return level
     
-    def mousePressEvent(self, event: QMouseEvent):
-        self.oldPos = event.globalPos()
+    # TODO uncomment after figure out scaling transformation between canvas only view and not
+    # def mousePressEvent(self, event: QMouseEvent):
+    #     self.oldPos = event.globalPos()
     
-    def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        delta: QPoint = event.globalPos() - self.oldPos
-        self.move(self.x() + delta.x(), self.y() + delta.y())
-        self.oldPos = event.globalPos()
+    # def mouseMoveEvent(self, event: QMouseEvent) -> None:
+    #     delta: QPoint = event.globalPos() - self.oldPos
+    #     self.move(self.x() + delta.x(), self.y() + delta.y())
+    #     self.oldPos = event.globalPos()

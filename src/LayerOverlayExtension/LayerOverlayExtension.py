@@ -41,13 +41,14 @@ class LayerOverlayExtension(Extension):
         
     def updateActiveWindow(self) -> None:
         if not self.activeWindowUpdated:
-            self.activeWindow = self.kritaInst.activeWindow()
+            self.activeWindow: Window = self.kritaInst.activeWindow()
             self.activeWindow.activeViewChanged.connect(self.updateView)
             
-            self.kritaInst.action('activateNextLayer').triggered.connect(self.updateLayerOverlay)
-            self.kritaInst.action('activateNextSiblingLayer').triggered.connect(self.updateLayerOverlay)
-            self.kritaInst.action('activatePreviousLayer').triggered.connect(self.updateLayerOverlay)
-            self.kritaInst.action('activatePreviousSiblingLayer').triggered.connect(self.updateLayerOverlay)
+            self.kritaInst.action('activateNextLayer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('activateNextSiblingLayer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('activatePreviousLayer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('activatePreviousSiblingLayer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('view_show_canvas_only').triggered.connect(self.updateLayerOverlayPosition)
     
     def updateViews(self) -> None:
         self.views = Krita.instance().activeWindow().views()
@@ -64,9 +65,13 @@ class LayerOverlayExtension(Extension):
         )
         x.exec_()
         
-    def updateLayerOverlay(self) -> None:
-        if self.layerOverlay is not None:
+    def updateLayerOverlayLayers(self) -> None:
+        if self.layerOverlayIsVisible:
             self.layerOverlay.updateLayers()
+            
+    def updateLayerOverlayPosition(self) -> None:
+        if self.layerOverlayIsVisible:
+            self.layerOverlay.updatePosition()
         
     def showLayerOverlay(self) -> None:
         if self.layerOverlay is None:
