@@ -1,7 +1,7 @@
 # Release-Notes
 
 <!--
-[Download](/LayerOverlayExtension%20v0.2.0.zip)
+[Download](LayerOverlayExtension%20v0.2.0.zip)
 # v0.2.0
 <details><summary>Update notes</summary>
 
@@ -10,7 +10,7 @@
 -->
 
 # v0.1.0
-[Download](/LayerOverlayExtension%20v0.1.0.zip)
+[Download](LayerOverlayExtension%20v0.1.0.zip)
 <details><summary>Update notes</summary>
 
 + The first version
