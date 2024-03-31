@@ -52,6 +52,8 @@ class LayerOverlayExtension(Extension):
     
     def updateViews(self) -> None:
         self.views = Krita.instance().activeWindow().views()
+        if self.views and self.layerOverlayIsVisible:
+            self.layerOverlay.destroy()
         
     def updateView(self) -> None:
         self.view = Krita.instance().activeWindow().activeView()
@@ -79,7 +81,7 @@ class LayerOverlayExtension(Extension):
             self.layerOverlay.launch()
             self.layerOverlayIsVisible = True
         elif self.layerOverlayIsVisible:
-            self.layerOverlay.close()
+            self.layerOverlay.closeWidget()
             self.layerOverlayIsVisible = False
         else:
             self.layerOverlay.launch()
