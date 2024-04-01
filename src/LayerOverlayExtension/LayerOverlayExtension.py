@@ -72,8 +72,7 @@ class LayerOverlayExtension(Extension):
             self.layerOverlay.updateLayers()
             
     def updateLayerOverlayPosition(self) -> None:
-        if self.layerOverlayIsVisible:
-            self.layerOverlay.updatePosition()
+        self.layerOverlay.updatePosition()
         
     def showLayerOverlay(self) -> None:
         if self.layerOverlay is None:

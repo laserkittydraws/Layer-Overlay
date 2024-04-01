@@ -35,17 +35,7 @@ class LayerOverlayWidget(QWidget):
         
         self.canvasOnlyMode = False
         
-        canvas: QWidget = Krita.instance().activeWindow().qwindow().findChild(QWidget,'view_0')
-        canvasPosition = canvas.mapToGlobal(QPoint(0, 0))
-        self.oldCanvasPosition = canvasPosition
-        self.oldCanvasSize = canvas.rect()
-        startPos = min(
-            int(startPosScale * canvas.width()),
-            int(startPosScale * canvas.height())
-        )
-        
-        self.move(startPos + canvasPosition.x(), startPos + canvasPosition.y())
-        self.oldPos = self.pos()
+        self.updatePosition()
         
         layout = QVBoxLayout()
         layout.setContentsMargins(10,0,10,10)
@@ -67,17 +57,7 @@ class LayerOverlayWidget(QWidget):
         
     def launch(self) -> None:
         self.updateLayers()
-        canvas: QWidget = Krita.instance().activeWindow().qwindow().findChild(QWidget,'view_0')
-        canvasPosition = canvas.mapToGlobal(QPoint(0, 0))
-        startPos = min(
-            int(startPosScale * canvas.width()),
-            int(startPosScale * canvas.height())
-        )
-        
-        if not self.canvasOnlyMode:
-            self.move(startPos + canvasPosition.x(), startPos + canvasPosition.y())
-        else:
-            self.move(startPos + canvasPosition.x(), startPos + int(canvasPosition.y() / 2))
+        # self.updatePosition()
         self.show()
         
     def _addItem(self, parent: QListWidget, node: Node, level: int) -> QListWidgetItem:
@@ -136,11 +116,12 @@ class LayerOverlayWidget(QWidget):
             int(startPosScale * canvas.height())
         )
         
-        self.canvasOnlyMode = not self.canvasOnlyMode
-        if not self.canvasOnlyMode:
-            self.move(startPos + canvasPosition.x(), startPos + canvasPosition.y())
-        else:
+        self.oldPos = self.pos()
+        if self.canvasOnlyMode:
             self.move(startPos + canvasPosition.x(), startPos + int(canvasPosition.y() / 2))
+        else:
+            self.move(startPos + canvasPosition.x(), startPos + canvasPosition.y())
+        self.canvasOnlyMode = not self.canvasOnlyMode
         
     def _findBottomNode(self, node: Node) -> Node:
         if not node.collapsed():
