@@ -72,19 +72,21 @@ class LayerOverlayExtension(Extension):
             self.layerOverlay.updateLayers()
             
     def updateLayerOverlayPosition(self) -> None:
-        self.layerOverlay.updatePosition()
+        if self.layerOverlay is not None:
+            self.layerOverlay.updatePosition()
         
     def showLayerOverlay(self) -> None:
-        if self.layerOverlay is None:
-            self.layerOverlay = LayerOverlayWidget(Krita.instance().activeWindow().qwindow())
-            self.layerOverlay.launch()
-            self.layerOverlayIsVisible = True
-        elif self.layerOverlayIsVisible:
-            self.layerOverlay.closeWidget()
-            self.layerOverlayIsVisible = False
-        else:
-            self.layerOverlay.launch()
-            self.layerOverlayIsVisible = True
+        if self.views:
+            if self.layerOverlay is None:
+                self.layerOverlay = LayerOverlayWidget(Krita.instance().activeWindow().qwindow())
+                self.layerOverlay.launch()
+                self.layerOverlayIsVisible = True
+            elif self.layerOverlayIsVisible:
+                self.layerOverlay.closeWidget()
+                self.layerOverlayIsVisible = False
+            else:
+                self.layerOverlay.launch()
+                self.layerOverlayIsVisible = True
 
 # And add the extension to Krita's list of extensions:
 Krita.instance().addExtension(LayerOverlayExtension(Krita.instance()))

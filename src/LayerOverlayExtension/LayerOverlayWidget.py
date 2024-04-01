@@ -34,6 +34,9 @@ class LayerOverlayWidget(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_QuitOnClose, True)
         
         self.canvasOnlyMode = False
+        canvas: QWidget = Krita.instance().activeWindow().qwindow().findChild(QWidget,'view_0')
+        self.oldCanvasPosition = canvas.mapToGlobal(QPoint(0, 0))
+        self.oldCanvasSize = canvas.rect()
         
         self.updatePosition()
         
@@ -57,7 +60,6 @@ class LayerOverlayWidget(QWidget):
         
     def launch(self) -> None:
         self.updateLayers()
-        # self.updatePosition()
         self.show()
         
     def _addItem(self, parent: QListWidget, node: Node, level: int) -> QListWidgetItem:
@@ -111,17 +113,31 @@ class LayerOverlayWidget(QWidget):
         canvas: QWidget = Krita.instance().activeWindow().qwindow().findChild(QWidget,'view_0')
         canvasPosition = canvas.mapToGlobal(QPoint(0, 0))
         
-        startPos = min(
+        relPosXScale = (self.pos().x() - self.oldCanvasPosition.x()) / self.oldCanvasSize.width()
+        relPosX = relPosXScale * canvas.width()
+        relPosYScale: float
+        if not self.canvasOnlyMode:
+            relPosYScale = (self.pos().y() - (self.oldCanvasPosition.y() / 2)) / self.oldCanvasSize.height()
+        else:
+            relPosYScale = (self.pos().y() - self.oldCanvasPosition.y()) / self.oldCanvasSize.height()
+        relPosY = relPosYScale * canvas.height()
+        
+        newPos = min(
             int(startPosScale * canvas.width()),
             int(startPosScale * canvas.height())
         )
         
+        newPosX = relPosX if relPosX >= newPos else newPos
+        newPosY = relPosY if relPosY >= newPos else newPos
+        
         self.oldPos = self.pos()
         if self.canvasOnlyMode:
-            self.move(startPos + canvasPosition.x(), startPos + int(canvasPosition.y() / 2))
+            self.move(int(newPosX) + canvasPosition.x(), int(newPosY) + int(canvasPosition.y() / 2))
         else:
-            self.move(startPos + canvasPosition.x(), startPos + canvasPosition.y())
+            self.move(int(newPosX) + canvasPosition.x(), int(newPosY) + canvasPosition.y())
         self.canvasOnlyMode = not self.canvasOnlyMode
+        self.oldCanvasSize = canvas.rect()
+        self.oldCanvasPosition = canvasPosition
         
     def _findBottomNode(self, node: Node) -> Node:
         if not node.collapsed():
@@ -171,11 +187,10 @@ class LayerOverlayWidget(QWidget):
         while (parent := parent.parentNode()) not in [rootNode, None]: level += 1
         return level
     
-    # TODO uncomment after figure out scaling transformation between canvas only view and not
-    # def mousePressEvent(self, event: QMouseEvent):
-    #     self.oldPos = event.globalPos()
+    def mousePressEvent(self, event: QMouseEvent):
+        self.oldPos = event.globalPos()
     
-    # def mouseMoveEvent(self, event: QMouseEvent) -> None:
-    #     delta: QPoint = event.globalPos() - self.oldPos
-    #     self.move(self.x() + delta.x(), self.y() + delta.y())
-    #     self.oldPos = event.globalPos()
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        delta: QPoint = event.globalPos() - self.oldPos
+        self.move(self.x() + delta.x(), self.y() + delta.y())
+        self.oldPos = event.globalPos()
