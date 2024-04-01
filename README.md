@@ -11,7 +11,7 @@ Krita does already allows you to choose which parts of the window will become hi
 >Example image of the layer overlay showing different layer types and the layer hierarchy
 
 ## How to use
-The default keyboard shortcut is `Ctrl+Shift+X` to make the overlay appear of disappear. The overlay can also be dragged around using the mouse
+The default keyboard shortcut is `Ctrl+Shift+X` to make the overlay appear or disappear. The overlay can also be dragged around using the mouse
 
 # Release Notes
 
