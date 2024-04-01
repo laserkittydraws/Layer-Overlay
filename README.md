@@ -15,7 +15,7 @@ The default keyboard shortcut is `Ctrl+Shift+X` to make the overlay appear or di
 
 # Release Notes
 
-[Download](Releases/LayerOverlayExtension%20v0.1.0.zip)
+[Download](Releases/LayerOverlayExtension%20v0.2.0.zip)
 
 Lastest version: [v0.2.0](Releases/ReleaseNotes.md#v020)
 <details><summary>Update notes</summary>
