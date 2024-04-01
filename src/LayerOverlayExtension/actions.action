@@ -11,7 +11,7 @@
         <iconText></iconText>
         <activationFlags>00001</activationFlags>
         <activationConditions>0</activationConditions>
-        <shortcut>ctrl+alt+shift+p</shortcut>
+        <shortcut>ctrl+shift+x</shortcut>
         <isCheckable>false</isCheckable>
         <statusTip></statusTip>
         </Action>
