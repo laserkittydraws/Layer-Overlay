@@ -7,7 +7,7 @@ from krita import *
 
 from .LayerOverlayWidget import *
 
-EXTENSION_VERSION = '0.1.0'
+EXTENSION_VERSION = '0.2.0'
 
 class LayerOverlayExtension(Extension):
     
@@ -36,7 +36,7 @@ class LayerOverlayExtension(Extension):
 
     
     def createActions(self, window: Window) -> None:
-        axn = window.createAction('testid', 'Test Action', 'Tools/Scripts')
+        axn = window.createAction('toggleLayerOverlay', 'Toggle Layer Overlay', 'Tools/Scripts')
         axn.triggered.connect(self.showLayerOverlay)
         
     def updateActiveWindow(self) -> None:
@@ -88,5 +88,4 @@ class LayerOverlayExtension(Extension):
                 self.layerOverlay.launch()
                 self.layerOverlayIsVisible = True
 
-# And add the extension to Krita's list of extensions:
 Krita.instance().addExtension(LayerOverlayExtension(Krita.instance()))

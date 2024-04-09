@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QPointF, QPoint, QRect
+from PyQt5.QtCore import Qt, QPoint, QRect
 from PyQt5.QtGui import QMouseEvent
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QListWidget, QListWidgetItem
 # from PyQt5.QtGui import QIcon
@@ -67,13 +67,16 @@ class LayerOverlayWidget(QWidget):
             item = QListWidgetItem(parent)
             item.setIcon(LAYER_ICONS.get(node.type(), LAYER_ICONS.get('paintlayer')))
             itemName = '    '*level + node.name()
-            dotAppend = '...' if len(itemName) > 30 else ''
-            itemName = itemName[0:30] + dotAppend
+            stringTruncation = '...' if len(itemName) > 30 else ''
+            itemName = itemName[0:30] + stringTruncation
             item.setText(itemName)
             return item
         return None
     
     def updateLayers(self) -> None:
+        
+        """updates the layers in the layer overlay widget
+        """
         
         self.layerList.clear()
         
@@ -110,6 +113,10 @@ class LayerOverlayWidget(QWidget):
         self.layerList.setCurrentItem(activeNodeItem)
         
     def updatePosition(self) -> None:
+        
+        """updates the position of the layer overlay widget
+        """
+        
         canvas: QWidget = Krita.instance().activeWindow().qwindow().findChild(QWidget,'view_0')
         canvasPosition = canvas.mapToGlobal(QPoint(0, 0))
         
@@ -139,7 +146,17 @@ class LayerOverlayWidget(QWidget):
         self.oldCanvasSize = canvas.rect()
         self.oldCanvasPosition = canvasPosition
         
+    
+    # NODE TRAVERSAL FUNCTIONS
+        
     def _findBottomNode(self, node: Node) -> Node:
+        
+        """recursively search for the bottom node in the current tree view
+
+        Returns:
+            Node: the bottom most node in the current tree view
+        """
+        
         if not node.collapsed():
             if (childs := node.childNodes()):
                 return self._findBottomNode(childs[0])
@@ -149,6 +166,16 @@ class LayerOverlayWidget(QWidget):
             return node
 
     def _findAboveNode(self, node: Node) -> Node:
+        
+        """returns the node above the specified node in the current tree view
+        
+        Args:
+            node (Node): node above which to find the above node
+
+        Returns:
+            Node: node above specified node
+        """
+        
         currIndex = node.index()
         parentNode = node.parentNode()
         numChilds = len(parentNode.childNodes())
@@ -160,20 +187,37 @@ class LayerOverlayWidget(QWidget):
             return self._findBottomNode(parentNode.childNodes()[currIndex + 1])
         
     def _findBelowNodeClimb(self, node: Node) -> Node:
+        
+        """recursively searches for the node below the specified node given an arbitrary amount of nesting
+
+        Args:
+            node (Node): node below which to find the below node
+        
+        Returns:
+            Node: the node below the specified node in the current tree view
+        """
+        
         currIndex: int = node.index()    
         parentNode: Node = node.parentNode()
         rootNode: Node = Krita.instance().activeDocument().rootNode()
+        
         if node == rootNode:
             return None
         if parentNode.childNodes()[0] == node:
             return self._findBelowNodeClimb(parentNode)
         else:
-            return parentNode.childNodes()[node.index() - 1]
+            return parentNode.childNodes()[currIndex - 1]
         
     def _findBelowNode(self, node: Node) -> Node:
-        currIndex: int = node.index()
-        parentNode: Node = node.parentNode()
-        rootNode = Krita.instance().activeDocument().rootNode()
+        
+        """finds the node below the specified node in the current tree view
+
+        Args:
+            node (Node): node below which to find the below node
+
+        Returns:
+            Node: the node below the specified node in the current tree view
+        """
         
         if (childs := node.childNodes()) and not node.collapsed():
             return childs[-1]
@@ -181,11 +225,24 @@ class LayerOverlayWidget(QWidget):
         return self._findBelowNodeClimb(node)
     
     def _getNodeLevel(self, node: Node) -> int:
+        
+        """returns how deep in the tree the node is
+
+        Args:
+            node (Node): node to find the tree depth of
+
+        Returns:
+            int: tree depth of the node
+        """
+        
         rootNode = Krita.instance().activeDocument().rootNode()
         level = 0
         parent: Node = node
         while (parent := parent.parentNode()) not in [rootNode, None]: level += 1
         return level
+    
+    
+    # MOUSE FUNCTIONS
     
     def mousePressEvent(self, event: QMouseEvent):
         self.oldPos = event.globalPos()

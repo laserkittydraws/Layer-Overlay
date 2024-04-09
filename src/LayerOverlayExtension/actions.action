@@ -3,9 +3,9 @@
     <Actions category="Scripts">
         <text>Layer Overlay Extension</text>
 
-        <Action name="testid">
+        <Action name="toggleLayerOverlay">
         <icon></icon>
-        <text>Test Action (in shortcut editor)</text>
+        <text>Toggle Layer Overlay</text>
         <whatsThis></whatsThis>
         <toolTip></toolTip>
         <iconText></iconText>
