@@ -1,6 +1,4 @@
-from PyQt5.QtCore import Qt, QObject
-from PyQt5.QtGui import QPalette
-from PyQt5.QtWidgets import QMessageBox, QWidget, QVBoxLayout, QLabel, QStyle, QCommonStyle
+from PyQt5.QtWidgets import QMessageBox
 
 from .KritaApi import *
 from krita import *
@@ -32,8 +30,6 @@ class LayerOverlayExtension(Extension):
         self.notifier.viewCreated.connect(self.updateViews)
         self.notifier.viewClosed.connect(self.updateViews)
         self.notifier.windowCreated.connect(self.updateActiveWindow)
-        
-
     
     def createActions(self, window: Window) -> None:
         axn = window.createAction('toggleLayerOverlay', 'Toggle Layer Overlay', 'Tools/Scripts')
@@ -44,19 +40,76 @@ class LayerOverlayExtension(Extension):
             self.activeWindow: Window = self.kritaInst.activeWindow()
             self.activeWindow.activeViewChanged.connect(self.updateView)
             
+            # navigating layers
             self.kritaInst.action('activateNextLayer').triggered.connect(self.updateLayerOverlayLayers)
             self.kritaInst.action('activateNextSiblingLayer').triggered.connect(self.updateLayerOverlayLayers)
             self.kritaInst.action('activatePreviousLayer').triggered.connect(self.updateLayerOverlayLayers)
             self.kritaInst.action('activatePreviousSiblingLayer').triggered.connect(self.updateLayerOverlayLayers)
+            
+            # misc
+            self.kritaInst.action('merge_layer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('duplicatelayer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('flatten_image').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('remove_layer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('RenameCurrentLayer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('paste_layer_from_clipboard').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('new_from_visible').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('move_layer_down').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('move_layer_up').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('cut_layer_clipboard').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('copy_selection_to_new_layer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('cut_selection_to_new_layer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('split_alpha_into_mask').triggered.connect(self.updateLayerOverlayLayers)
+            
+            # convert layer to...
+            self.kritaInst.action('convert_to_filter_mask').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('convert_to_paint_layer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('convert_to_selection_mask').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('convert_to_transparency_mask').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('convert_to_file_layer').triggered.connect(self.updateLayerOverlayLayers)
+            
+            # import layer as...
+            self.kritaInst.action('import_layer_as_filter_mask').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('import_layer_as_paint_layer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('import_layer_as_selection_mask').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('import_layer_as_transparency_mask').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('import_layer_from_file').triggered.connect(self.updateLayerOverlayLayers)
+            
+            # create new layer actions
+            self.kritaInst.action('add_new_clone_layer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('add_new_colorize_mask').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('add_new_file_layer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('add_new_fill_layer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('add_new_adjustment_layer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('add_new_filter_mask').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('add_new_group_layer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('add_new_selection_mask').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('add_new_paint_layer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('add_new_transform_mask').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('add_new_transparency_mask').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('add_new_shape_layer').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('new_from_visible').triggered.connect(self.updateLayerOverlayLayers)
+            
+            # grouping of layers
+            self.kritaInst.action('create_quick_group').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('quick_ungroup').triggered.connect(self.updateLayerOverlayLayers)
+            self.kritaInst.action('create_quick_clipping_group').triggered.connect(self.updateLayerOverlayLayers)
+            
+            
+            # canvas only mode switching
             self.kritaInst.action('view_show_canvas_only').triggered.connect(self.updateLayerOverlayPosition)
+    
+    # MARK: UI FUNCTIONS
     
     def updateViews(self) -> None:
         self.views = Krita.instance().activeWindow().views()
-        if self.views and self.layerOverlayIsVisible:
+        if not self.views and self.layerOverlayIsVisible:
             self.layerOverlay.destroy()
         
     def updateView(self) -> None:
         self.view = Krita.instance().activeWindow().activeView()
+        if self.layerOverlay:
+            self.layerOverlay.updateLayers()
     
     def test(self) -> None:
         x = QMessageBox(
