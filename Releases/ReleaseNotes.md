@@ -1,7 +1,7 @@
 # Release-Notes
 
 # v0.2.0
-[Download](LayerOverlayExtension%20v0.2.0.zip)
+[Download](MiniLayerExaminerModule%20v0.2.0.zip)
 <details><summary>Update notes</summary>
 
 + Fixed positioning bug when switching between canvas only mode and regular mode
@@ -10,7 +10,7 @@
 
 
 # v0.1.0
-[Download](LayerOverlayExtension%20v0.1.0.zip)
+[Download](MiniLayerExaminerModule%20v0.1.0.zip)
 <details><summary>Update notes</summary>
 
 + The first version

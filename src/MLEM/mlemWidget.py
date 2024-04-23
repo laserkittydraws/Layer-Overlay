@@ -5,13 +5,13 @@ from PyQt5.QtWidgets import QGroupBox, QLabel, QListWidget, QListWidgetItem, QVB
 from .KritaApi import *
 from krita import *
 
-from .LayerOverlayLayerView import LayerOverlayLayerView
+from .mlemLayerView import mlemLayerView
 
 startPosScale: float = 0.02
 
-class LayerOverlayWidget(QWidget):
+class mlemWidget(QWidget):
     
-    layerView: LayerOverlayLayerView
+    layerView: mlemLayerView
     canvasOnlyMode: bool
     oldCanvasPosition: QPoint
     oldCanvasSize: QRect
@@ -35,7 +35,7 @@ class LayerOverlayWidget(QWidget):
         
         title = QLabel('Layer Overlay')
         
-        self.layerView = LayerOverlayLayerView(self)
+        self.layerView = mlemLayerView(self)
         self.updateLayers()
         
         self.layout().addWidget(title)

@@ -3,11 +3,11 @@ from PyQt5.QtWidgets import QMessageBox
 from .KritaApi import *
 from krita import *
 
-from .LayerOverlayWidget import *
+from .mlemWidget import *
 
 EXTENSION_VERSION = '0.2.0'
 
-class LayerOverlayExtension(Extension):
+class MiniOverlayExaminerModuleExtension(Extension):
     
     kritaInst: Krita = Krita.instance()
     notifier: Notifier = kritaInst.notifier()
@@ -17,7 +17,7 @@ class LayerOverlayExtension(Extension):
     view: View
     views: list[View]
     
-    layerOverlay: LayerOverlayWidget = None
+    layerOverlay: mlemWidget = None
     layerOverlayIsVisible = False
 
     def __init__(self, parent: QMainWindow):
@@ -131,7 +131,7 @@ class LayerOverlayExtension(Extension):
     def showLayerOverlay(self) -> None:
         if self.views:
             if self.layerOverlay is None:
-                self.layerOverlay = LayerOverlayWidget(Krita.instance().activeWindow().qwindow())
+                self.layerOverlay = mlemWidget(Krita.instance().activeWindow().qwindow())
                 self.layerOverlay.launch()
                 self.layerOverlayIsVisible = True
             elif self.layerOverlayIsVisible:
@@ -141,4 +141,4 @@ class LayerOverlayExtension(Extension):
                 self.layerOverlay.launch()
                 self.layerOverlayIsVisible = True
 
-Krita.instance().addExtension(LayerOverlayExtension(Krita.instance()))
+Krita.instance().addExtension(MiniOverlayExaminerModuleExtension(Krita.instance()))

@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Service
 ServiceTypes=Krita/PythonPlugin
-X-KDE-Library=LayerOverlayExtension
+X-KDE-Library=MLEM
 X-Python-2-Compatible=false
-Name=Layer Overlay Extension
+Name=Mini Layer Examiner Module
 Comment=An extension to add an overlay of the layer explorer

@@ -14,12 +14,12 @@ LAYER_ICONS = {
     'vectorlayer': Krita.instance().icon('vectorLayer')
 }
 
-class LayerOverlayLayerView(QWidget):
+class mlemLayerView(QWidget):
     
     layerList: QListWidget
     
     def __init__(self, parent: QWidget) -> None:
-        super(LayerOverlayLayerView, self).__init__(parent)
+        super(mlemLayerView, self).__init__(parent)
         self.setLayout(QVBoxLayout())
         self.layout().setContentsMargins(0,0,0,0)
         # self.setFixedSize()
